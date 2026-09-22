@@ -87,32 +87,91 @@ The changes in this fork were developed with the help of Claude (Anthropic).
 
 ## Building
 
-### Windows
+### Windows, step by step
 
-**1. Visual Studio Community Edition** (the free edition is enough). In the installer choose the
-workload **"Desktop development with C++"** and make sure these components are selected:
+These steps assume a machine with nothing installed yet. Neither JOM nor vcpkg comes with an
+installer: they are simply unpacked into a folder of your choice. The examples below use
+`C:\Dev` as that folder – any path works, as long as you use it consistently and it contains
+no spaces or non-English characters.
 
-* MSVC v14x build tools (x64)
+**1. Get the source code** into `C:\Dev\scantailor-advanced`, either with
+[Git for Windows](https://git-scm.com/download/win):
+
+```
+cd /d C:\Dev
+git clone https://github.com/2ndmax/scantailor-advanced-with-claude.git scantailor-advanced
+```
+
+or by downloading the ZIP of this repository ("Code" → "Download ZIP") and unpacking it there.
+
+**2. Install Visual Studio Community** (the free edition):
+<https://visualstudio.microsoft.com/vs/community/>
+In the installer pick the workload **"Desktop development with C++"**. Of its optional
+components, only these are needed:
+
+* MSVC build tools (x64)
 * C++ CMake tools for Windows
 * Windows 11 SDK
 
-**2. [JOM](https://wiki.qt.io/Jom)** – a faster, parallel `nmake` replacement. Unpack it and put
-`jom.exe` somewhere in your `PATH`.
+**3. Download JOM** (a parallel `nmake` replacement): <https://wiki.qt.io/Jom>
+Unpack it to `C:\Dev\jom`, so that `C:\Dev\jom\jom.exe` exists.
 
-**3. [vcpkg](https://vcpkg.io/)** for the libraries. Install them with (the quotes are needed in
-PowerShell):
+**4. Download vcpkg** as a ZIP: <https://github.com/microsoft/vcpkg>
+Unpack it to `C:\Dev\vcpkg`.
 
-```
-vcpkg install qtbase qtsvg qttools libjpeg-turbo libpng "tiff[core,jpeg,zip,lzma,zstd,webp,lerc,libdeflate,tools]" openjpeg zlib boost-test boost-foreach boost-intrusive boost-multi-index boost-lambda
-```
-
-**4. Build** in a "Native Tools Command Prompt for VS x64", from a `build` directory inside the
-source directory:
+**5. Build the libraries with vcpkg.** Open the **"Native Tools Command Prompt for VS x64"**
+(from the start menu, inside the Visual Studio folder) and run:
 
 ```
+cd /d C:\Dev\vcpkg
+bootstrap-vcpkg.bat
+vcpkg install --recurse qtbase qtsvg qttools libjpeg-turbo libpng "tiff[core,jpeg,zip,lzma,zstd,webp,lerc,libdeflate,tools]" openjpeg zlib boost-test boost-foreach boost-intrusive boost-multi-index boost-lambda
+```
+
+This compiles Qt and everything else from source and takes a while – plan for an hour or more
+and several gigabytes of disk space.
+
+**6. Set the environment variables.** Open **PowerShell as administrator** and run (adjust the
+two paths if you used a different folder):
+
+```powershell
+$vcpkgRoot = "C:\Dev\vcpkg"
+$jomRoot   = "C:\Dev\jom"
+[System.Environment]::SetEnvironmentVariable("VCPKG_ROOT", $vcpkgRoot, "Machine")
+[System.Environment]::SetEnvironmentVariable("JOM_ROOT",   $jomRoot,   "Machine")
+$currentPath = [System.Environment]::GetEnvironmentVariable("PATH", "Machine")
+[System.Environment]::SetEnvironmentVariable("PATH", "$currentPath;$vcpkgRoot;$jomRoot", "Machine")
+```
+
+Then **restart the computer**, so every program sees the new variables.
+
+**7. Configure and build.** In the "Native Tools Command Prompt for VS x64":
+
+```
+cd /d C:\Dev\vcpkg
+vcpkg integrate install
+
+cd /d C:\Dev\scantailor-advanced
+mkdir build
+cd build
 cmake -G "NMake Makefiles JOM" -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE="%VCPKG_ROOT%\scripts\buildsystems\vcpkg.cmake" ..
-jom
+jom -j 10
+```
+
+`-j 10` is the number of parallel compiler processes; use roughly the number of processor cores.
+The finished `scantailor-advanced.exe` and all needed DLLs end up in the `build` directory.
+
+**8. Run the tests** (optional), in the same `build` directory:
+
+```
 ctest -C Release --output-on-failure
+```
+
+When configuring again later, e.g. after changing build options, add `--fresh` to the `cmake`
+call to discard the cached configuration:
+
+```
+cmake --fresh -G "NMake Makefiles JOM" -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE="%VCPKG_ROOT%\scripts\buildsystems\vcpkg.cmake" ..
 ```
 
 ### Linux (Debian / Ubuntu)
