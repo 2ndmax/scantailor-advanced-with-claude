@@ -1,4 +1,4 @@
-# ScanTailor Advanced – fork with extended image import
+# ScanTailor Advanced – fork with reworked oblique correction and extended image import
 
 This is a fork of [ScanTailor Advanced](https://github.com/ScanTailor-Advanced/scantailor-advanced),
 an interactive post-processing tool for scanned pages.
@@ -11,48 +11,103 @@ The changes in this fork were developed with the help of Claude (Anthropic).
 
 ## Changes in this fork
 
+### Deskew: oblique correction reworked
+
+* The oblique (shear) correction is switched the same way as the deskew rotation now: two wide
+  **Auto / Manual buttons** instead of a check box, both in the page options panel and in the
+  default parameters dialog, in a consistent layout (heading, buttons, angle).
+* **Fixed: the deskew "Auto" button lost its highlight.** All four mode buttons (deskew and
+  oblique) were auto-exclusive inside one group box, and Qt groups such buttons per parent
+  widget, so choosing an oblique mode silently unchecked the deskew mode. Each pair now has
+  its own button group.
+* Switching oblique to *Manual* resets an automatically found shear angle to 0, so the shear
+  isn't left applied with automatic correction turned off.
+* "Apply oblique automatically" acts as a master switch: stored per-page parameters can no
+  longer re-enable oblique correction while it is off.
+* The oblique finder reports *no* angle when the image has too little structure to tell an
+  angle from noise, instead of shearing the page by an arbitrary amount.
+* The "apply to other pages" dialog no longer accepts a selection that would apply neither
+  the deskew nor the oblique angle.
+* The project and profile XML format is unchanged, so existing projects and profiles keep working.
+
 ### Image import
+
 * **TIFF reading reworked**
   * Tiled TIFF files can be opened (previously, bi-level, grayscale and palette images failed).
   * Floating point, signed integer and 32-bit images are supported.
   * Colors of palette images in big-endian ("Motorola") TIFF files are correct now.
   * Fixed undefined behaviour when reading 2 and 4 bit images.
-  * TIFF files using a compression the program can't decode are rejected right away when importing,
-    naming the compression.
+  * Read errors no longer yield images with uninitialised memory in the unread rows.
+  * TIFF files using a compression the program can't decode are rejected right away when
+    importing, naming the compression.
 * **JPEG 2000 import** (`.jp2 .j2k .j2c .jpc .jpf .jpx .jph .jhc`) through OpenJPEG:
   fast import (only the file header is read), thumbnails decoded at reduced resolution,
   multi-threaded decoding, huge images decoded strip by strip to limit memory use.
 * **Faster thumbnails for JPEG** files, decoded directly at reduced size.
+* Fixed a leak and undefined behaviour in the JPEG metadata reader (libjpeg's error handling
+  jumped past the cleanup of C++ objects) and a buffer bug in the PNG reader on partial reads.
 
 ### Error reporting
+
 * When images can't be loaded or output files can't be written, the reason is shown –
   collected in a single, non-modal message instead of one message per file.
 * Output TIFF files are checked to have been written completely (e.g. on a full disk);
   a failed write no longer leaves a damaged file behind.
+* Malformed values in project files (e.g. a missing binarisation threshold) no longer turn
+  into settings that black out a page.
 
-### Robustness
-* Fixed a use-after-free when finishing a lasso zone, thread-safety issues with the
-  application settings and the default parameter profiles, and possible crashes
-  with missing resolution (DPI) information.
+### Correctness and robustness
+
+* Fixed several defects that produced wrong results or crashes: a grayscale measurement that
+  read the wrong image, a division by zero in Wolf binarisation on blank pages, integer
+  overflows in pixel arithmetic (TIFF buffers, binarisation, distance transform) on large
+  images, missing guards in `BinaryImage`, a wrong assertion and a lost search direction in
+  the arc length mapper, an unsigned wraparound in the page split gap scan, and divisions by
+  zero in the content finder and with missing resolution (DPI) information.
+* Fixed a use-after-free when finishing a lasso zone, and thread-safety issues with the
+  application settings, the default parameter profiles and the deviation statistics used for
+  sorting thumbnails.
+* Natural file name sorting now also compares the separators, so names differing only in
+  those (`img-2.tif` vs. `img_1.tif`) sort by the whole name rather than falling back to a
+  plain lexicographic compare. **This can change page order in projects with inconsistent
+  file naming.**
+* The thumbnail list keeps its position when re-sorting moves the current page elsewhere.
 * Auto-save is also triggered by changes to the page list and to the current page.
 * Code cleanups based on the compiler's static code analysis.
 
 ### Build and tests
+
 * CMake verifies which compression schemes libtiff supports (LZMA etc. are required).
 * Optional static code analysis: `-DENABLE_CODE_ANALYSIS=ON` (MSVC: `/W4 /analyze`).
-* New tests for the image readers and writer; CI now fails on failing tests and also builds on Windows.
+* New tests for the image readers and the TIFF writer; CI now fails on failing tests and also
+  builds on Windows.
+* The `update_translations` target no longer refers to `Qt6::lupdate` by name, which broke the
+  Qt 5 fallback build. A review of the Qt 6 port found no other problem: the code already
+  guards every API removed in Qt 6.
 
 ## Building
 
-### Windows (Visual Studio + vcpkg)
+### Windows
 
-Install the dependencies (the quotes are needed in PowerShell):
+**1. Visual Studio Community Edition** (the free edition is enough). In the installer choose the
+workload **"Desktop development with C++"** and make sure these components are selected:
+
+* MSVC v14x build tools (x64)
+* C++ CMake tools for Windows
+* Windows 11 SDK
+
+**2. [JOM](https://wiki.qt.io/Jom)** – a faster, parallel `nmake` replacement. Unpack it and put
+`jom.exe` somewhere in your `PATH`.
+
+**3. [vcpkg](https://vcpkg.io/)** for the libraries. Install them with (the quotes are needed in
+PowerShell):
 
 ```
 vcpkg install qtbase qtsvg qttools libjpeg-turbo libpng "tiff[core,jpeg,zip,lzma,zstd,webp,lerc,libdeflate,tools]" openjpeg zlib boost-test boost-foreach boost-intrusive boost-multi-index boost-lambda
 ```
 
-Then, in a "Native Tools Command Prompt for VS x64", from a `build` directory inside the source directory:
+**4. Build** in a "Native Tools Command Prompt for VS x64", from a `build` directory inside the
+source directory:
 
 ```
 cmake -G "NMake Makefiles JOM" -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE="%VCPKG_ROOT%\scripts\buildsystems\vcpkg.cmake" ..
@@ -72,10 +127,11 @@ make -j$(nproc)
 
 ### Build options
 
-* `-DTIFF_REQUIRED_CODECS=...` / `-DTIFF_RECOMMENDED_CODECS=...` – the TIFF compression schemes libtiff
-  has to / should support (defaults: `LZW;PACKBITS;CCITT;JPEG;OJPEG;DEFLATE;LZMA` / `ZSTD;WEBP;LERC`).
-  `-DSKIP_TIFF_CODEC_CHECK=ON` skips the check.
-* `-DENABLE_CODE_ANALYSIS=ON` – extra warnings and static code analysis. Slow; best used in a separate build directory.
+* `-DTIFF_REQUIRED_CODECS=...` / `-DTIFF_RECOMMENDED_CODECS=...` – the TIFF compression schemes
+  libtiff has to / should support (defaults: `LZW;PACKBITS;CCITT;JPEG;OJPEG;DEFLATE;LZMA` /
+  `ZSTD;WEBP;LERC`). `-DSKIP_TIFF_CODEC_CHECK=ON` skips the check.
+* `-DENABLE_CODE_ANALYSIS=ON` – extra warnings and static code analysis. Slow; best used in a
+  separate build directory.
 * `-DBUILD_TESTS=OFF` – don't build the unit tests.
 
 ## License
