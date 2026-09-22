@@ -1,4 +1,4 @@
-# ScanTailor Advanced – fork with reworked oblique correction and extended image import
+# ScanTailor Advanced with Claude – fork with reworked oblique correction and extended image import
 
 This is a fork of [ScanTailor Advanced](https://github.com/ScanTailor-Advanced/scantailor-advanced),
 an interactive post-processing tool for scanned pages.
@@ -94,12 +94,12 @@ installer: they are simply unpacked into a folder of your choice. The examples b
 `C:\Dev` as that folder – any path works, as long as you use it consistently and it contains
 no spaces or non-English characters.
 
-**1. Get the source code** into `C:\Dev\scantailor-advanced`, either with
+**1. Get the source code** into `C:\Dev\scantailor-advanced-with-claude`, either with
 [Git for Windows](https://git-scm.com/download/win):
 
 ```
 cd /d C:\Dev
-git clone https://github.com/2ndmax/scantailor-advanced-with-claude.git scantailor-advanced
+git clone https://github.com/2ndmax/scantailor-advanced-with-claude.git
 ```
 
 or by downloading the ZIP of this repository ("Code" → "Download ZIP") and unpacking it there.
@@ -151,7 +151,7 @@ Then **restart the computer**, so every program sees the new variables.
 cd /d C:\Dev\vcpkg
 vcpkg integrate install
 
-cd /d C:\Dev\scantailor-advanced
+cd /d C:\Dev\scantailor-advanced-with-claude
 mkdir build
 cd build
 cmake -G "NMake Makefiles JOM" -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE="%VCPKG_ROOT%\scripts\buildsystems\vcpkg.cmake" ..
