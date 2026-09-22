@@ -26,7 +26,7 @@ jobs:
         sudo apt-get install -y --fix-missing \
           build-essential gcc g++ cmake \
           libjpeg-dev libpng-dev \
-          libtiff6 libtiff-dev zlib1g-dev \
+          libtiff6 libtiff-dev zlib1g-dev libopenjp2-7-dev \
           libboost-test-dev libboost-dev \
           qtbase5-dev libqt5svg5-dev \
           qttools5-dev qttools5-dev-tools \

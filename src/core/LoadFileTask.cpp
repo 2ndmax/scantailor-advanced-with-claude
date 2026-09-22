@@ -8,6 +8,7 @@
 #include <QCoreApplication>
 #include <QDir>
 #include <QFile>
+#include <QStringList>
 #include <QTextDocument>
 
 #include "AbstractFilter.h"
@@ -26,7 +27,7 @@ using namespace imageproc;
 class LoadFileTask::ErrorResult : public FilterResult {
   Q_DECLARE_TR_FUNCTIONS(LoadFileTask)
  public:
-  explicit ErrorResult(const QString& filePath);
+  ErrorResult(const QString& filePath, const QStringList& reasons);
 
   void updateUI(FilterUiInterface* ui) override;
 
@@ -34,6 +35,7 @@ class LoadFileTask::ErrorResult : public FilterResult {
 
  private:
   QString m_filePath;
+  QStringList m_reasons;
   bool m_fileExists;
 };
 
@@ -55,13 +57,14 @@ LoadFileTask::LoadFileTask(Type type,
 LoadFileTask::~LoadFileTask() = default;
 
 FilterResultPtr LoadFileTask::operator()() {
-  QImage image = ImageLoader::load(m_imageId);
+  QStringList loadErrors;
+  QImage image = ImageLoader::load(m_imageId, &loadErrors);
 
   try {
     throwIfCancelled();
 
     if (image.isNull()) {
-      return std::make_shared<ErrorResult>(m_imageId.filePath());
+      return std::make_shared<ErrorResult>(m_imageId.filePath(), loadErrors);
     } else {
       convertToSupportedFormat(image);
       updateImageSizeIfChanged(image);
@@ -108,8 +111,8 @@ void LoadFileTask::convertToSupportedFormat(QImage& image) const {
 
 /*======================= LoadFileTask::ErrorResult ======================*/
 
-LoadFileTask::ErrorResult::ErrorResult(const QString& filePath)
-    : m_filePath(QDir::toNativeSeparators(filePath)), m_fileExists(QFile::exists(filePath)) {}
+LoadFileTask::ErrorResult::ErrorResult(const QString& filePath, const QStringList& reasons)
+    : m_filePath(QDir::toNativeSeparators(filePath)), m_reasons(reasons), m_fileExists(QFile::exists(filePath)) {}
 
 void LoadFileTask::ErrorResult::updateUI(FilterUiInterface* ui) {
   class ErrWidget : public ErrorWidget {
@@ -130,6 +133,9 @@ void LoadFileTask::ErrorResult::updateUI(FilterUiInterface* ui) {
   Qt::TextFormat fmt = Qt::AutoText;
   if (m_fileExists) {
     errMsg = tr("The following file could not be loaded:\n%1").arg(m_filePath);
+    if (!m_reasons.isEmpty()) {
+      errMsg += QLatin1String("\n\n") + tr("Reason:") + QLatin1Char('\n') + m_reasons.join(QLatin1Char('\n'));
+    }
     fmt = Qt::PlainText;
   } else {
     errMsg = tr("The following file doesn't exist:<br>%1<br>"

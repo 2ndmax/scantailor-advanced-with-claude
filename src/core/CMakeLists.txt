@@ -44,7 +44,10 @@ set(common_sources
     ProjectPages.cpp ProjectPages.h
     FilterData.cpp FilterData.h
     ImageMetadataLoader.cpp ImageMetadataLoader.h
+    ImageLoadErrors.cpp ImageLoadErrors.h
     TiffReader.cpp TiffReader.h
+    Jp2Reader.cpp Jp2Reader.h
+    Jp2MetadataLoader.cpp Jp2MetadataLoader.h
     TiffWriter.cpp TiffWriter.h
     PngMetadataLoader.cpp PngMetadataLoader.h
     TiffMetadataLoader.cpp TiffMetadataLoader.h
@@ -122,14 +125,14 @@ add_library(core STATIC ${common_sources} ${common_ui_files})
 if(Qt6_FOUND)
   target_link_libraries(
     core
-    PRIVATE TIFF::TIFF PNG::PNG ZLIB::ZLIB JPEG::JPEG
+    PRIVATE TIFF::TIFF PNG::PNG ZLIB::ZLIB JPEG::JPEG ${OPENJPEG_TARGET}
     PUBLIC Qt::Core Qt::Gui Qt::Widgets Qt::Xml Qt::Network Qt::OpenGL Qt::Svg Qt::OpenGLWidgets
     imageproc zones
     fix_orientation page_split deskew select_content page_layout output)
 else()
   target_link_libraries(
     core
-    PRIVATE TIFF::TIFF PNG::PNG ZLIB::ZLIB JPEG::JPEG
+    PRIVATE TIFF::TIFF PNG::PNG ZLIB::ZLIB JPEG::JPEG ${OPENJPEG_TARGET}
     PUBLIC Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Xml Qt5::Network Qt5::OpenGL Qt5::Svg
     imageproc zones
     fix_orientation page_split deskew select_content page_layout output)

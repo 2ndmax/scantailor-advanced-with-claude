@@ -68,193 +68,203 @@ ApplicationSettings& ApplicationSettings::getInstance() {
   return instance;
 }
 
+QVariant ApplicationSettings::readValue(const QString& key, const QVariant& defaultValue) const {
+  const QMutexLocker locker(&m_mutex);
+  return m_settings.value(key, defaultValue);
+}
+
+void ApplicationSettings::writeValue(const QString& key, const QVariant& value) {
+  const QMutexLocker locker(&m_mutex);
+  m_settings.setValue(key, value);
+}
+
 bool ApplicationSettings::isOpenGlEnabled() const {
-  return m_settings.value(getKey(OPENGL_STATE_KEY), DEFAULT_OPENGL_STATE).toBool();
+  return readValue(getKey(OPENGL_STATE_KEY), DEFAULT_OPENGL_STATE).toBool();
 }
 
 void ApplicationSettings::setOpenGlEnabled(bool enabled) {
-  m_settings.setValue(getKey(OPENGL_STATE_KEY), enabled);
+  writeValue(getKey(OPENGL_STATE_KEY), enabled);
 }
 
 QString ApplicationSettings::getColorScheme() const {
-  return m_settings.value(getKey(COLOR_SCHEME_KEY), DEFAULT_COLOR_SCHEME).toString();
+  return readValue(getKey(COLOR_SCHEME_KEY), DEFAULT_COLOR_SCHEME).toString();
 }
 
 void ApplicationSettings::setColorScheme(const QString& scheme) {
-  m_settings.setValue(getKey(COLOR_SCHEME_KEY), scheme);
+  writeValue(getKey(COLOR_SCHEME_KEY), scheme);
 }
 
 bool ApplicationSettings::isAutoSaveProjectEnabled() const {
-  return m_settings.value(getKey(AUTO_SAVE_PROJECT_KEY), DEFAULT_AUTO_SAVE_PROJECT).toBool();
+  return readValue(getKey(AUTO_SAVE_PROJECT_KEY), DEFAULT_AUTO_SAVE_PROJECT).toBool();
 }
 
 void ApplicationSettings::setAutoSaveProjectEnabled(bool enabled) {
-  m_settings.setValue(getKey(AUTO_SAVE_PROJECT_KEY), enabled);
+  writeValue(getKey(AUTO_SAVE_PROJECT_KEY), enabled);
 }
 
 int ApplicationSettings::getTiffBwCompression() const {
-  return m_settings.value(getKey(TIFF_BW_COMPRESSION_KEY), DEFAULT_TIFF_BW_COMPRESSION).toInt();
+  return readValue(getKey(TIFF_BW_COMPRESSION_KEY), DEFAULT_TIFF_BW_COMPRESSION).toInt();
 }
 
 void ApplicationSettings::setTiffBwCompression(int compression) {
-  m_settings.setValue(getKey(TIFF_BW_COMPRESSION_KEY), compression);
+  writeValue(getKey(TIFF_BW_COMPRESSION_KEY), compression);
 }
 
 int ApplicationSettings::getTiffColorCompression() const {
-  return m_settings.value(getKey(TIFF_COLOR_COMPRESSION_KEY), DEFAULT_TIFF_COLOR_COMPRESSION).toInt();
+  return readValue(getKey(TIFF_COLOR_COMPRESSION_KEY), DEFAULT_TIFF_COLOR_COMPRESSION).toInt();
 }
 
 void ApplicationSettings::setTiffColorCompression(int compression) {
-  m_settings.setValue(getKey(TIFF_COLOR_COMPRESSION_KEY), compression);
+  writeValue(getKey(TIFF_COLOR_COMPRESSION_KEY), compression);
 }
 
 bool ApplicationSettings::isBlackOnWhiteDetectionEnabled() const {
-  return m_settings.value(getKey(BLACK_ON_WHITE_DETECTION_KEY), DEFAULT_BLACK_ON_WHITE_DETECTION).toBool();
+  return readValue(getKey(BLACK_ON_WHITE_DETECTION_KEY), DEFAULT_BLACK_ON_WHITE_DETECTION).toBool();
 }
 
 void ApplicationSettings::setBlackOnWhiteDetectionEnabled(bool enabled) {
-  m_settings.setValue(getKey(BLACK_ON_WHITE_DETECTION_KEY), enabled);
+  writeValue(getKey(BLACK_ON_WHITE_DETECTION_KEY), enabled);
 }
 
 bool ApplicationSettings::isBlackOnWhiteDetectionOutputEnabled() const {
-  return m_settings.value(getKey(BLACK_ON_WHITE_DETECTION_OUTPUT_KEY), DEFAULT_BLACK_ON_WHITE_DETECTION_OUTPUT)
+  return readValue(getKey(BLACK_ON_WHITE_DETECTION_OUTPUT_KEY), DEFAULT_BLACK_ON_WHITE_DETECTION_OUTPUT)
       .toBool();
 }
 
 void ApplicationSettings::setBlackOnWhiteDetectionOutputEnabled(bool enabled) {
-  m_settings.setValue(getKey(BLACK_ON_WHITE_DETECTION_OUTPUT_KEY), enabled);
+  writeValue(getKey(BLACK_ON_WHITE_DETECTION_OUTPUT_KEY), enabled);
 }
 
 bool ApplicationSettings::isHighlightDeviationEnabled() const {
-  return m_settings.value(getKey(HIGHLIGHT_DEVIATION_KEY), DEFAULT_HIGHLIGHT_DEVIATION).toBool();
+  return readValue(getKey(HIGHLIGHT_DEVIATION_KEY), DEFAULT_HIGHLIGHT_DEVIATION).toBool();
 }
 
 void ApplicationSettings::setHighlightDeviationEnabled(bool enabled) {
-  m_settings.setValue(getKey(HIGHLIGHT_DEVIATION_KEY), enabled);
+  writeValue(getKey(HIGHLIGHT_DEVIATION_KEY), enabled);
 }
 
 double ApplicationSettings::getDeskewDeviationCoef() const {
-  return m_settings.value(getKey(DESKEW_DEVIATION_COEF_KEY), DEFAULT_DESKEW_DEVIATION_COEF).toDouble();
+  return readValue(getKey(DESKEW_DEVIATION_COEF_KEY), DEFAULT_DESKEW_DEVIATION_COEF).toDouble();
 }
 
 void ApplicationSettings::setDeskewDeviationCoef(double value) {
-  m_settings.setValue(getKey(DESKEW_DEVIATION_COEF_KEY), value);
+  writeValue(getKey(DESKEW_DEVIATION_COEF_KEY), value);
 }
 
 double ApplicationSettings::getDeskewDeviationThreshold() const {
-  return m_settings.value(getKey(DESKEW_DEVIATION_THRESHOLD_KEY), DEFAULT_DESKEW_DEVIATION_THRESHOLD).toDouble();
+  return readValue(getKey(DESKEW_DEVIATION_THRESHOLD_KEY), DEFAULT_DESKEW_DEVIATION_THRESHOLD).toDouble();
 }
 
 void ApplicationSettings::setDeskewDeviationThreshold(double value) {
-  m_settings.setValue(getKey(DESKEW_DEVIATION_THRESHOLD_KEY), value);
+  writeValue(getKey(DESKEW_DEVIATION_THRESHOLD_KEY), value);
 }
 
 double ApplicationSettings::getSelectContentDeviationCoef() const {
-  return m_settings.value(getKey(SELECT_CONTENT_DEVIATION_COEF_KEY), DEFAULT_SELECT_CONTENT_DEVIATION_COEF).toDouble();
+  return readValue(getKey(SELECT_CONTENT_DEVIATION_COEF_KEY), DEFAULT_SELECT_CONTENT_DEVIATION_COEF).toDouble();
 }
 
 void ApplicationSettings::setSelectContentDeviationCoef(double value) {
-  m_settings.setValue(getKey(SELECT_CONTENT_DEVIATION_COEF_KEY), value);
+  writeValue(getKey(SELECT_CONTENT_DEVIATION_COEF_KEY), value);
 }
 
 double ApplicationSettings::getSelectContentDeviationThreshold() const {
-  return m_settings.value(getKey(SELECT_CONTENT_DEVIATION_THRESHOLD_KEY), DEFAULT_SELECT_CONTENT_DEVIATION_THRESHOLD)
+  return readValue(getKey(SELECT_CONTENT_DEVIATION_THRESHOLD_KEY), DEFAULT_SELECT_CONTENT_DEVIATION_THRESHOLD)
       .toDouble();
 }
 
 void ApplicationSettings::setSelectContentDeviationThreshold(double value) {
-  m_settings.setValue(getKey(SELECT_CONTENT_DEVIATION_THRESHOLD_KEY), value);
+  writeValue(getKey(SELECT_CONTENT_DEVIATION_THRESHOLD_KEY), value);
 }
 
 double ApplicationSettings::getMarginsDeviationCoef() const {
-  return m_settings.value(getKey(MARGINS_DEVIATION_COEF_KEY), DEFAULT_MARGINS_DEVIATION_COEF).toDouble();
+  return readValue(getKey(MARGINS_DEVIATION_COEF_KEY), DEFAULT_MARGINS_DEVIATION_COEF).toDouble();
 }
 
 void ApplicationSettings::setMarginsDeviationCoef(double value) {
-  m_settings.setValue(getKey(MARGINS_DEVIATION_COEF_KEY), value);
+  writeValue(getKey(MARGINS_DEVIATION_COEF_KEY), value);
 }
 
 double ApplicationSettings::getMarginsDeviationThreshold() const {
-  return m_settings.value(getKey(MARGINS_DEVIATION_THRESHOLD_KEY), DEFAULT_MARGINS_DEVIATION_THRESHOLD).toDouble();
+  return readValue(getKey(MARGINS_DEVIATION_THRESHOLD_KEY), DEFAULT_MARGINS_DEVIATION_THRESHOLD).toDouble();
 }
 
 void ApplicationSettings::setMarginsDeviationThreshold(double value) {
-  m_settings.setValue(getKey(MARGINS_DEVIATION_THRESHOLD_KEY), value);
+  writeValue(getKey(MARGINS_DEVIATION_THRESHOLD_KEY), value);
 }
 
 QSize ApplicationSettings::getThumbnailQuality() const {
-  return m_settings.value(getKey(THUMBNAIL_QUALITY_KEY), DEFAULT_THUMBNAIL_QUALITY).toSize();
+  return readValue(getKey(THUMBNAIL_QUALITY_KEY), DEFAULT_THUMBNAIL_QUALITY).toSize();
 }
 
 void ApplicationSettings::setThumbnailQuality(const QSize& quality) {
-  m_settings.setValue(getKey(THUMBNAIL_QUALITY_KEY), quality);
+  writeValue(getKey(THUMBNAIL_QUALITY_KEY), quality);
 }
 
 QSizeF ApplicationSettings::getMaxLogicalThumbnailSize() const {
-  return m_settings.value(getKey(MAX_LOGICAL_THUMBNAIL_SIZE_KEY), DEFAULT_MAX_LOGICAL_THUMBNAIL_SIZE).toSizeF();
+  return readValue(getKey(MAX_LOGICAL_THUMBNAIL_SIZE_KEY), DEFAULT_MAX_LOGICAL_THUMBNAIL_SIZE).toSizeF();
 }
 
 void ApplicationSettings::setMaxLogicalThumbnailSize(const QSizeF& size) {
-  m_settings.setValue(getKey(MAX_LOGICAL_THUMBNAIL_SIZE_KEY), size);
+  writeValue(getKey(MAX_LOGICAL_THUMBNAIL_SIZE_KEY), size);
 }
 
 bool ApplicationSettings::isSingleColumnThumbnailDisplayEnabled() const {
-  return m_settings.value(getKey(SINGLE_COLUMN_THUMBNAIL_DISPLAY_KEY), DEFAULT_SINGLE_COLUMN_THUMBNAIL_DISPLAY)
+  return readValue(getKey(SINGLE_COLUMN_THUMBNAIL_DISPLAY_KEY), DEFAULT_SINGLE_COLUMN_THUMBNAIL_DISPLAY)
       .toBool();
 }
 
 void ApplicationSettings::setSingleColumnThumbnailDisplayEnabled(bool enabled) {
-  m_settings.setValue(getKey(SINGLE_COLUMN_THUMBNAIL_DISPLAY_KEY), enabled);
+  writeValue(getKey(SINGLE_COLUMN_THUMBNAIL_DISPLAY_KEY), enabled);
 }
 
 QString ApplicationSettings::getLanguage() const {
-  return m_settings.value(getKey(LANGUAGE_KEY), DEFAULT_LANGUAGE).toString();
+  return readValue(getKey(LANGUAGE_KEY), DEFAULT_LANGUAGE).toString();
 }
 
 void ApplicationSettings::setLanguage(const QString& language) {
-  m_settings.setValue(getKey(LANGUAGE_KEY), language);
+  writeValue(getKey(LANGUAGE_KEY), language);
 }
 
 QString ApplicationSettings::getUnits() const {
-  return m_settings.value(getKey(UNITS_KEY), DEFAULT_UNITS).toString();
+  return readValue(getKey(UNITS_KEY), DEFAULT_UNITS).toString();
 }
 
 void ApplicationSettings::setUnits(const QString& units) {
-  m_settings.setValue(getKey(UNITS_KEY), units);
+  writeValue(getKey(UNITS_KEY), units);
 }
 
 QString ApplicationSettings::getCurrentProfile() const {
-  return m_settings.value(getKey(CURRENT_PROFILE_KEY), DEFAULT_PROFILE).toString();
+  return readValue(getKey(CURRENT_PROFILE_KEY), DEFAULT_PROFILE).toString();
 }
 
 void ApplicationSettings::setCurrentProfile(const QString& profile) {
-  m_settings.setValue(getKey(CURRENT_PROFILE_KEY), profile);
+  writeValue(getKey(CURRENT_PROFILE_KEY), profile);
 }
 
 bool ApplicationSettings::isCancelingSelectionQuestionEnabled() {
-  return m_settings.value(getKey(SHOW_CANCELING_SELECTION_QUESTION_KEY), DEFAULT_SHOW_CANCELING_SELECTION_QUESTION)
+  return readValue(getKey(SHOW_CANCELING_SELECTION_QUESTION_KEY), DEFAULT_SHOW_CANCELING_SELECTION_QUESTION)
       .toBool();
 }
 
 void ApplicationSettings::setCancelingSelectionQuestionEnabled(bool enabled) {
-  m_settings.setValue(getKey(SHOW_CANCELING_SELECTION_QUESTION_KEY), enabled);
+  writeValue(getKey(SHOW_CANCELING_SELECTION_QUESTION_KEY), enabled);
 }
 
 int ApplicationSettings::getDefaultZoneCreationMode() const {
-  const int v = m_settings.value(getKey(DEFAULT_ZONE_CREATION_MODE_KEY), DEFAULT_ZONE_CREATION_MODE).toInt();
+  const int v = readValue(getKey(DEFAULT_ZONE_CREATION_MODE_KEY), DEFAULT_ZONE_CREATION_MODE).toInt();
   return (v >= 0 && v <= 2) ? v : DEFAULT_ZONE_CREATION_MODE;
 }
 
 void ApplicationSettings::setDefaultZoneCreationMode(const int mode) {
   if (mode >= 0 && mode <= 2) {
-    m_settings.setValue(getKey(DEFAULT_ZONE_CREATION_MODE_KEY), mode);
+    writeValue(getKey(DEFAULT_ZONE_CREATION_MODE_KEY), mode);
   }
 }
 
 bool ApplicationSettings::isOutputShowGuidesEnabled() const {
-  return m_settings.value(getKey(OUTPUT_SHOW_GUIDES_KEY), DEFAULT_OUTPUT_SHOW_GUIDES).toBool();
+  return readValue(getKey(OUTPUT_SHOW_GUIDES_KEY), DEFAULT_OUTPUT_SHOW_GUIDES).toBool();
 }
 
 void ApplicationSettings::setOutputShowGuidesEnabled(bool enabled) {
-  m_settings.setValue(getKey(OUTPUT_SHOW_GUIDES_KEY), enabled);
+  writeValue(getKey(OUTPUT_SHOW_GUIDES_KEY), enabled);
 }

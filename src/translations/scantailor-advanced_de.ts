@@ -866,6 +866,10 @@
 <context>
     <name>LoadFileTask</name>
     <message>
+        <source>Reason:</source>
+        <translation>Grund:</translation>
+    </message>
+    <message>
         <location filename="../core/LoadFileTask.cpp" line="132"/>
         <source>The following file could not be loaded:
 %1</source>
@@ -1420,6 +1424,13 @@ Um sie zu ermitteln, führen Sie die Stapelverarbeitung unter &quot;Inhalt ausw�
 </context>
 <context>
     <name>ProjectFilesDialog</name>
+    <message numerus="yes">
+        <source>... and %n more.</source>
+        <translation>
+            <numerusform>... und %n weitere.</numerusform>
+            <numerusform>... und %n weitere.</numerusform>
+        </translation>
+    </message>
     <message>
         <location filename="../app/ProjectFilesDialog.ui" line="14"/>
         <source>Project Files</source>
@@ -3717,6 +3728,106 @@ p, li { white-space: pre-wrap; }
         <location filename="../core/filters/select_content/OptionsWidget.ui" line="274"/>
         <source>Apply to ...</source>
         <translation>Anwenden auf...</translation>
+    </message>
+</context>
+<context>
+    <name>ImageLoadErrorNotifier</name>
+    <message>
+        <source>Problems with image files</source>
+        <translation>Probleme mit Bilddateien</translation>
+    </message>
+    <message>
+        <source>(writing)</source>
+        <translation>(Schreiben)</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n output file(s) could not be written.</source>
+        <translation>
+            <numerusform>%n Ausgabedatei konnte nicht geschrieben werden.</numerusform>
+            <numerusform>%n Ausgabedateien konnten nicht geschrieben werden.</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Don't show this message again in this session</source>
+        <translation>Diese Meldung in dieser Sitzung nicht mehr anzeigen</translation>
+    </message>
+    <message>
+        <source>(page %1)</source>
+        <translation>(Seite %1)</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n image(s) could not be loaded.</source>
+        <translation>
+            <numerusform>%n Bild konnte nicht geladen werden.</numerusform>
+            <numerusform>%n Bilder konnten nicht geladen werden.</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>... and %n more (see details).</source>
+        <translation>
+            <numerusform>... und %n weiteres (siehe Details).</numerusform>
+            <numerusform>... und %n weitere (siehe Details).</numerusform>
+        </translation>
+    </message>
+</context>
+<context>
+    <name>ImageLoader</name>
+    <message>
+        <source>The file format is not supported, or the file is damaged.</source>
+        <translation>Das Dateiformat wird nicht unterstützt oder die Datei ist beschädigt.</translation>
+    </message>
+</context>
+<context>
+    <name>TiffWriter</name>
+    <message>
+        <source>Unknown error.</source>
+        <translation>Unbekannter Fehler.</translation>
+    </message>
+    <message>
+        <source>There is no image to write.</source>
+        <translation>Es gibt kein Bild zum Schreiben.</translation>
+    </message>
+</context>
+<context>
+    <name>Jp2Reader</name>
+    <message>
+        <source>The image contains a component that could not be decoded.</source>
+        <translation>Das Bild enthält eine Komponente, die nicht dekodiert werden konnte.</translation>
+    </message>
+    <message>
+        <source>The JPEG 2000 file header is damaged or incomplete.</source>
+        <translation>Der Dateikopf der JPEG-2000-Datei ist beschädigt oder unvollständig.</translation>
+    </message>
+</context>
+<context>
+    <name>TiffReader</name>
+    <message>
+        <source>The compression method "%1" is not supported by the libtiff library this program was built with.</source>
+        <translation>Das Komprimierungsverfahren „%1“ wird von der libtiff-Bibliothek, mit der dieses Programm erstellt wurde, nicht unterstützt.</translation>
+    </message>
+    <message>
+        <source>Inconsistent image layout.</source>
+        <translation>Widersprüchlicher Bildaufbau.</translation>
+    </message>
+    <message>
+        <source>Invalid tile layout.</source>
+        <translation>Ungültige Kachelaufteilung.</translation>
+    </message>
+    <message>
+        <source>Page %1 doesn't exist in this file.</source>
+        <translation>Seite %1 existiert in dieser Datei nicht.</translation>
+    </message>
+    <message>
+        <source>The image dimensions are missing or invalid.</source>
+        <translation>Die Bildabmessungen fehlen oder sind ungültig.</translation>
+    </message>
+    <message>
+        <source>The color palette of the image is missing.</source>
+        <translation>Die Farbpalette des Bildes fehlt.</translation>
+    </message>
+    <message>
+        <source>Unsupported sample format (%1 bits per sample, format %2).</source>
+        <translation>Nicht unterstütztes Sample-Format (%1 Bit pro Sample, Format %2).</translation>
     </message>
 </context>
 </TS>

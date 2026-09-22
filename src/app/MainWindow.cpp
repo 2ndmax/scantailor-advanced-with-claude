@@ -12,6 +12,7 @@
 #include <QFileSystemModel>
 #include <QMenu>
 #include <QMessageBox>
+#include <QProcess>
 #include <QResource>
 #include <QScrollBar>
 #include <QSortFilterProxyModel>
@@ -32,6 +33,8 @@
 #include "FilterOptionsWidget.h"
 #include "FixDpiDialog.h"
 #include "ImageInfo.h"
+#include "ImageLoadErrorNotifier.h"
+#include "ImageLoadErrors.h"
 #include "ImageMetadataLoader.h"
 #include "ImageViewBase.h"
 #include "LoadFileTask.h"
@@ -125,6 +128,9 @@ MainWindow::MainWindow()
 
   setupUi(this);
   setupIcons();
+
+  // Owned by this window.
+  new ImageLoadErrorNotifier(this);
 
   sortOptions->setVisible(false);
 
@@ -381,6 +387,10 @@ void MainWindow::switchToNewProject(const std::shared_ptr<ProjectPages>& pages,
   }
   m_pages = pages;
   m_projectFile = projectFilePath;
+  // Changes to the page list (inserting, removing, splitting pages) should
+  // trigger the auto-save just like switching pages does.  The signal may
+  // come from a worker thread, the connection is queued then.
+  connect(m_pages.get(), &ProjectPages::modified, this, &MainWindow::updateAutoSaveTimer);
 
   if (projectReader) {
     m_selectedPage = projectReader->selectedPage();
@@ -1318,6 +1328,10 @@ void MainWindow::filterResult(const BackgroundTaskPtr& task, const FilterResultP
   // for instance because thumbnail invalidation is done from here.
   result->updateUI(this);
 
+  // Processing results carry changed page parameters, which should get
+  // auto-saved even if the user stays on the same page.
+  updateAutoSaveTimer();
+
   if (isBatchProcessingInProgress()) {
     if (m_batchQueue->allProcessed()) {
       stopBatchProcessing();
@@ -1334,7 +1348,17 @@ void MainWindow::filterResult(const BackgroundTaskPtr& task, const FilterResultP
         if (cmd.isEmpty()) {
           QApplication::beep();
         } else {
-          Q_UNUSED(std::system(cmd.toStdString().c_str()));
+          // Note: started detached rather than through std::system(), which
+          // would block the GUI thread until the sound has finished playing
+          // and would pass the command through a shell.
+#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
+          const QStringList cmdParts = QProcess::splitCommand(cmd);
+          if (!cmdParts.isEmpty()) {
+            QProcess::startDetached(cmdParts.first(), cmdParts.mid(1));
+          }
+#else
+          QProcess::startDetached(cmd);
+#endif
         }
       }
 
@@ -1561,7 +1585,7 @@ void MainWindow::showAboutDialog() {
   Ui::AboutDialog ui;
   auto* dialog = new QDialog(this);
   ui.setupUi(dialog);
-  ui.version->setText(QString(tr("version ")) + QString::fromUtf8(VERSION));
+  ui.version->setText(QString(tr("version ")) + QString::fromUtf8(VERSION) + QString::fromUtf8(" + Claude-Patch"));
 
   QResource license(":/GPLv3.html");
   ui.licenseViewer->setHtml(QString::fromUtf8((const char*) license.data(), static_cast<int>(license.size())));
@@ -1865,7 +1889,8 @@ void MainWindow::showInsertFileDialog(BeforeOrAfter beforeOrAfter, const ImageId
   auto dialog = std::make_unique<QFileDialog>(this, tr("Files to insert"), dialogDir);
   dialog->setFileMode(QFileDialog::ExistingFiles);
   dialog->setProxyModel(new ProxyModel(*m_pages));
-  dialog->setNameFilter(tr("Images not in project (%1)").arg("*.png *.tiff *.tif *.jpeg *.jpg"));
+  dialog->setNameFilter(tr("Images not in project (%1)")
+                            .arg("*.png *.tiff *.tif *.jpeg *.jpg *.jp2 *.j2k *.j2c *.jpc *.jpf *.jpx *.jph *.jhc"));
   // XXX: Adding individual pages from a multi-page TIFF where
   // some of the pages are already in project is not supported right now.
   if (dialog->exec() != QDialog::Accepted) {
@@ -1894,6 +1919,7 @@ void MainWindow::showInsertFileDialog(BeforeOrAfter beforeOrAfter, const ImageId
     const QFileInfo fileInfo(files[i]);
     ImageFileInfo imageFileInfo(fileInfo, std::vector<ImageMetadata>());
 
+    ImageLoadErrorCapture errorCapture;
     const ImageMetadataLoader::Status status = ImageMetadataLoader::load(
         files.at(i), [&](const ImageMetadata& metadata) { imageFileInfo.imageInfo().push_back(metadata); });
 
@@ -1901,7 +1927,12 @@ void MainWindow::showInsertFileDialog(BeforeOrAfter beforeOrAfter, const ImageId
       newFiles.push_back(imageFileInfo);
       loadedFiles.push_back(fileInfo.absoluteFilePath());
     } else {
-      failedFiles.push_back(fileInfo.absoluteFilePath());
+      QString failedFile = fileInfo.absoluteFilePath();
+      const QStringList reasons = errorCapture.messages();
+      if (!reasons.isEmpty()) {
+        failedFile += QLatin1String(" (") + reasons.front() + QLatin1Char(')');
+      }
+      failedFiles.push_back(failedFile);
     }
   }
 

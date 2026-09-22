@@ -288,6 +288,8 @@ void ZoneCreationInteraction::onMouseMoveEvent(QMouseEvent* event, InteractionSt
       makePeerPreceeder(*m_context.createDefaultInteraction());
       m_context.imageView().update();
       delete this;
+      // No member may be accessed from here on.
+      return;
     }
   }
 

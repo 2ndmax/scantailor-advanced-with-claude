@@ -7,6 +7,7 @@
 
 #include <foundation/NonCopyable.h>
 
+#include <QMutex>
 #include <QSettings>
 #include <QSize>
 #include <QSizeF>
@@ -167,6 +168,14 @@ class ApplicationSettings {
   static const int DEFAULT_ZONE_CREATION_MODE;  // 0 = polygonal
   static const bool DEFAULT_OUTPUT_SHOW_GUIDES;
 
+  QVariant readValue(const QString& key, const QVariant& defaultValue) const;
+
+  void writeValue(const QString& key, const QVariant& value);
+
+  // QSettings is only reentrant, not thread-safe.  But the settings are read
+  // from worker threads as well (e.g. by TiffWriter while batch processing),
+  // so all access to m_settings is serialized.
+  mutable QMutex m_mutex;
   QSettings m_settings;
 };
 

@@ -43,17 +43,6 @@ static ZoneCreationMode zoneCreationModeFromInt(int v) {
   }
 }
 
-static int zoneCreationModeToInt(ZoneCreationMode mode) {
-  switch (mode) {
-    case ZoneCreationMode::LASSO:
-      return 1;
-    case ZoneCreationMode::RECTANGULAR:
-      return 2;
-    default:
-      return 0;
-  }
-}
-
 ZoneEditorBase::ZoneEditorBase(const QImage& image,
                                const ImagePixmapUnion& downscaledVersion,
                                const ImagePresentation& presentation,

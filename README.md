@@ -452,7 +452,7 @@ Install the required dependencies:
 sudo apt install build-essential cmake \
   qt5-qmake qtbase5-dev libqt5svg5-dev qttools5-dev \
   libboost-test-dev libboost-dev \
-  libjpeg-dev libpng-dev libtiff-dev zlib1g-dev
+  libjpeg-dev libpng-dev libtiff-dev zlib1g-dev libopenjp2-7-dev
 ```
 
 Configure and build (out-of-tree build is required):
@@ -482,7 +482,7 @@ You can cross-compile the Windows executable from Linux using [MXE](https://mxe.
 ```bash
 git clone https://github.com/mxe/mxe.git ~/mxe
 cd ~/mxe
-make MXE_TARGETS=x86_64-w64-mingw32.static qt5 jpeg libpng tiff zlib boost
+make MXE_TARGETS=x86_64-w64-mingw32.static qt5 jpeg libpng tiff openjpeg zlib boost
 ```
 
 Then from the ScanTailor Advanced source directory:
@@ -496,3 +496,21 @@ This produces `build-win-static/scantailor.exe`. Use `./build-windows.sh shared`
 #### Building on Windows (native)
 
 Go to [this repository](https://github.com/4lex4/scantailor-libs-build) and follow the instructions given there.
+
+Alternatively, with Visual Studio and [vcpkg](https://vcpkg.io/), install the dependencies:
+
+```bash
+vcpkg install qtbase qtsvg qttools libjpeg-turbo libpng "tiff[core,jpeg,zip,lzma,zstd,webp,lerc,libdeflate,tools]" openjpeg zlib boost-test boost-foreach boost-intrusive boost-multi-index boost-lambda
+```
+
+and configure with `-DCMAKE_TOOLCHAIN_FILE=<vcpkg root>/scripts/buildsystems/vcpkg.cmake`.
+
+#### Image formats and TIFF compression
+
+TIFF files are read through libtiff, which only supports the compression schemes it was built with.
+CMake verifies that libtiff supports LZW, PackBits, CCITT G3/G4, JPEG, old-style JPEG, Deflate and LZMA
+(and warns if ZSTD, WebP or LERC are missing).  The lists can be changed with `-DTIFF_REQUIRED_CODECS=...`
+and `-DTIFF_RECOMMENDED_CODECS=...`, the check can be skipped with `-DSKIP_TIFF_CODEC_CHECK=ON`.
+
+JPEG 2000 files (`.jp2`, `.j2k`, `.j2c`, `.jpc`, `.jpf`, `.jpx`, `.jph`, `.jhc`) are read through
+[OpenJPEG](https://www.openjpeg.org/) 2.3 or newer.

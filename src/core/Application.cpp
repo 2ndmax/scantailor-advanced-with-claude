@@ -58,7 +58,7 @@ std::list<QString> Application::getLanguagesList() const {
 }
 
 void Application::initTranslations() {
-#if QT_VERSION_MAJOR == 5 && QT_VERSION_MINOR < 14
+#if QT_VERSION < QT_VERSION_CHECK(5, 14, 0)
   auto opt = QString::SkipEmptyParts;
 #else
   auto opt = Qt::SkipEmptyParts;

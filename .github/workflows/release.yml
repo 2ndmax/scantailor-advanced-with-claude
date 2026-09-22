@@ -28,7 +28,7 @@ jobs:
             build-essential cmake \
             qt5-qmake qtbase5-dev libqt5svg5-dev qttools5-dev \
             libboost-test-dev libboost-dev \
-            libjpeg-dev libpng-dev libtiff-dev zlib1g-dev
+            libjpeg-dev libpng-dev libtiff-dev zlib1g-dev libopenjp2-7-dev
 
       - name: Build .deb
         run: ./build-deb.sh build
@@ -57,7 +57,7 @@ jobs:
             build-essential cmake \
             qt5-qmake qtbase5-dev libqt5svg5-dev qttools5-dev \
             libboost-test-dev libboost-dev \
-            libjpeg-dev libpng-dev libtiff-dev zlib1g-dev \
+            libjpeg-dev libpng-dev libtiff-dev zlib1g-dev libopenjp2-7-dev \
             file
 
       - name: Build and install to AppDir
